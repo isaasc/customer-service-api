@@ -1,4 +1,5 @@
-const { Schema, default: mongoose } = require('mongoose');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const schemaTicket = new Schema(
   {
@@ -22,12 +23,7 @@ const schemaTicket = new Schema(
       type: Boolean,
       default: true,
     },
-  },
-  { timestamps: true },
+  }
 );
 
-const Ticket = mongoose.model('Ticket', schemaTicket);
-module.exports = {
-  Ticket,
-  schemaTicket,
-};
+module.exports = mongoose.model('Ticket', schemaTicket);

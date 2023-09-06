@@ -1,5 +1,4 @@
-const { default: mongoose } = require('mongoose');
-
+const mongoose = require('mongoose');
 const Ticket = mongoose.model('Ticket');
 
 exports.createTicket = async (ticket) => {

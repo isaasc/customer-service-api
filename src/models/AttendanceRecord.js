@@ -1,9 +1,8 @@
 const { Schema, default: mongoose } = require('mongoose');
-const { schemaTicket } = require('./ticket');
 
 const schemaAttendanceRecord = new Schema({
   ticket: {
-    type: schemaTicket,
+    type: String,
     required: [true, 'ticket is required'],
   },
   description: {

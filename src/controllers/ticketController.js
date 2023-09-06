@@ -49,7 +49,7 @@ exports.findTicketById = async (req, res) => {
     res.status(404).send();
   }
 
-  res.status(200).send(product);
+  res.status(200).send(ticket);
 };
 
 exports.updateTicketById = async (req, res) => {
@@ -63,5 +63,3 @@ exports.deleteTicketById = async (req, res) => {
   await ticketRepository.deleteTicketById(ticketId);
   res.status(204).send('Ticket deleted', req.body);
 };
-
-module.exports = ticketController;

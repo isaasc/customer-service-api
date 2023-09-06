@@ -1,3 +1,6 @@
+require('./models/ticket');
+require('./models/Attendant');
+require('./models/AttendanceRecord');
 const express = require('express');
 const app = express();
 

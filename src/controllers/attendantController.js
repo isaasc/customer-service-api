@@ -62,5 +62,3 @@ exports.deleteAttendantById = async (req, res) => {
   await attendantRepository.deleteAttendantById(attendantId);
   res.status(204).send('Attendant deleted', req.body);
 };
-
-module.exports = attendantController;
