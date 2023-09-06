@@ -1,16 +1,16 @@
-require('./models/product');
 const express = require('express');
 const app = express();
+
+// Middleawers
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
-const mongoose = require('mongoose');
-mongoose.connect('mongodb://fiap:123456@localhost:27017/admin');
+// DB Connection
+const conn = require('./db/conn');
+conn();
 
-const ticketRouter = require('./routers/ticket-route');
-const index = require('./routers/index');
-
-app.use('/ticket', ticketRouter);
-app.use('/', index);
+// Routes
+const routes = require('./routes/router');
+app.use('/', routes);
 
 module.exports = app;
