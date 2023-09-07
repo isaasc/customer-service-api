@@ -1,12 +1,25 @@
 const attendantRepository = require('../repositories/attendantRepository');
 const ValidationContract = require('../util/validators');
+const fetch = require('node-fetch');
 
 exports.createAttendant = async (req, res) => {
   let validators = new ValidationContract();
   validators.isRequired(req.body.idPerson, 'idPerson is required');
-  validators.isRequired(req.body.departmentCode, 'departmentCode is required');
+
+console.log(req.body.idDepartment)
+const test = `http:localhost:3001/departamento/${req.body.idDepartment}`;
+console.log(test);
+
+
 
   try {
+    const departamento = await fetch(`http:localhost:3001/departamento/${req.body.idDepartment}`);
+    console.log(departamento);
+    if(departamento == null) {
+      res.status(404).send('idDepartment not found');
+    }
+
+
     if (validators.isValid()) {
       await attendantRepository.createAttendant(req.body);
       res.status(201).send('Attendant created!');
@@ -16,6 +29,7 @@ exports.createAttendant = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });

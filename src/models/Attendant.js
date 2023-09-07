@@ -5,9 +5,8 @@ const schemaAttendant = new Schema({
     type: String,
     required: [true, 'idPerson is required'],
   },
-  departmentCode: {
+  idDepartment: {
     type: String,
-    required: [true, 'departmentCode is required'],
   },
 });
 
