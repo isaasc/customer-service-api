@@ -1,4 +1,4 @@
-require('./models/ticket');
+require('./models/Ticket');
 require('./models/Attendant');
 require('./models/AttendanceRecord');
 const express = require('express');

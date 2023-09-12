@@ -23,7 +23,8 @@ exports.createAttendanceRecord = async (req, res) => {
 
 exports.findAllAttendanceRecords = async (req, res) => {
   try {
-    const attendanceRecords = await AttendanceRecordRepository.findAllAttendanceRecords();
+    const attendanceRecords =
+      await AttendanceRecordRepository.findAllAttendanceRecords();
     if (attendanceRecords == null || attendanceRecords.length == 0) {
       res.status(204).send('No AttendanceRecords found');
     } else {
@@ -38,10 +39,11 @@ exports.findAllAttendanceRecords = async (req, res) => {
 
 exports.findAttendanceRecordById = async (req, res) => {
   const attendanceRecordId = req.params.id;
-  if (attendanceRecords == null) {
+  if (attendanceRecordId == null) {
     res.status(400).send('AttendanceRecordId is required');
   }
-  const attendanceRecord = AttendanceRecordRepository.findAttendanceRecordById(attendanceRecordId);
+  const attendanceRecord =
+    AttendanceRecordRepository.findAttendanceRecordById(attendanceRecordId);
 
   if (!attendanceRecord) {
     res.status(404).send();
@@ -52,12 +54,17 @@ exports.findAttendanceRecordById = async (req, res) => {
 
 exports.updateAttendanceRecordById = async (req, res) => {
   const attendanceRecordId = req.params.id;
-  await AttendanceRecordRepository.updateAttendanceRecordById(attendanceRecordId, req.body);
+  await AttendanceRecordRepository.updateAttendanceRecordById(
+    attendanceRecordId,
+    req.body,
+  );
   res.status(200).send('AttendanceRecord updated', req.body);
 };
 
 exports.deleteAttendanceRecordById = async (req, res) => {
   const attendanceRecordId = req.params.id;
-  await AttendanceRecordRepository.deleteAttendanceRecordById(attendanceRecordId);
+  await AttendanceRecordRepository.deleteAttendanceRecordById(
+    attendanceRecordId,
+  );
   res.status(204).send('AttendanceRecord deleted', req.body);
 };
