@@ -1,5 +1,5 @@
 const attendanceRecordRepository = require('../repositories/attendanceRecordRepository');
-const ticketController = require('./ticketController');
+const ticketRepository = require('../repositories/ticketRepository');
 const ValidationContract = require('../util/validators');
 
 exports.createAttendanceRecord = async (req, res) => {
@@ -12,15 +12,14 @@ exports.createAttendanceRecord = async (req, res) => {
 
   try {
     if (validators.isValid()) {
-      const responseTicket = await ticketController.findTicketById(
+      const responseTicket = await ticketRepository.findTicketById(
         req.body.idTicket,
       );
-      if (responseTicket.status !== 200) {
-        res.status(responseTicket.status).send(responseTicket.text);
+      if (responseTicket == null) {
+        res.status(400).send(`idTicket: "${req.body.idTicket}" not found`);
         return;
       }
-      const ticket = await responseTicket.json();
-      req.body.ticket = ticket;
+      req.body.ticket = responseTicket;
 
       await attendanceRecordRepository.createAttendanceRecord(req.body);
       res.status(201).send('AttendanceRecord created!');
@@ -64,7 +63,9 @@ exports.findAttendanceRecordById = async (req, res) => {
   try {
     if (validators.isValid()) {
       const attendanceRecord =
-        attendanceRecordRepository.findAttendanceRecordById(attendanceRecordId);
+        await attendanceRecordRepository.findAttendanceRecordById(
+          attendanceRecordId,
+        );
       if (!attendanceRecord) {
         res.status(204).send();
         return;
@@ -76,7 +77,6 @@ exports.findAttendanceRecordById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });
@@ -91,9 +91,27 @@ exports.updateAttendanceRecordById = async (req, res) => {
     attendanceRecordId,
     `attendanceRecordId: "${attendanceRecordId}" is not a ObjectId valid.`,
   );
+  if (req.body.idTicket) {
+    validators.isObjectIdValid(
+      req.body.idTicket,
+      `idTicket: "${req.body.idTicket}" is not a ObjectId valid.`,
+    );
+  }
 
   try {
     if (validators.isValid()) {
+      if (req.body.idTicket) {
+        const responseTicket = await ticketRepository.findTicketById(
+          req.body.idTicket,
+        );
+        if (responseTicket == null) {
+          res.status(400).send(`idTicket: "${req.body.idTicket}" not found`);
+          return;
+        }
+
+        req.body.ticket = responseTicket;
+      }
+
       await attendanceRecordRepository.updateAttendanceRecordById(
         attendanceRecordId,
         req.body,
@@ -105,7 +123,6 @@ exports.updateAttendanceRecordById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });
@@ -133,7 +150,6 @@ exports.deleteAttendanceRecordById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });

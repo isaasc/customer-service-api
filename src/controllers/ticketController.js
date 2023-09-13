@@ -1,6 +1,6 @@
 const ticketRepository = require('../repositories/ticketRepository');
 const ValidationContract = require('../util/validators');
-const attendantController = require('./attendantController');
+const attendantRepository = require('../repositories/attendantRepository');
 
 exports.createTicket = async (req, res) => {
   let validators = new ValidationContract();
@@ -18,11 +18,14 @@ exports.createTicket = async (req, res) => {
 
   try {
     if (validators.isValid()) {
-      const responseAttendant = await attendantController.findAttendantById(
+      const responseAttendant = await attendantRepository.findAttendantById(
         req.body.idAttendant,
       );
-      if (responseAttendant.status !== 200) {
-        res.status(responseAttendant.status).send(responseAttendant.text);
+
+      if (responseAttendant == null) {
+        res
+          .status(400)
+          .send(`idAttendant: "${req.body.idAttendant}" not found`);
         return;
       }
 
@@ -77,7 +80,6 @@ exports.findTicketById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });
@@ -93,8 +95,33 @@ exports.updateTicketById = async (req, res) => {
     `ticketId: "${ticketId}" is not a ObjectId valid.`,
   );
 
+  if (req.body.idAttendant) {
+    validators.isObjectIdValid(
+      req.body.idAttendant,
+      `idAttendant: "${req.body.idAttendant}" is not a ObjectId valid.`,
+    );
+  }
+
+  if (req.body.idClient) {
+    validators.isObjectIdValid(
+      req.body.idClient,
+      `idClient: "${req.body.idClient}" is not a ObjectId valid.`,
+    );
+  }
+
   try {
     if (validators.isValid()) {
+      const responseAttendant = await attendantRepository.findAttendantById(
+        req.body.idAttendant,
+      );
+
+      if (responseAttendant == null) {
+        res
+          .status(400)
+          .send(`idAttendant: "${req.body.idAttendant}" not found`);
+        return;
+      }
+
       await ticketRepository.updateTicketById(ticketId, req.body);
       res.status(200).send('Ticket updated');
     } else {
@@ -103,7 +130,6 @@ exports.updateTicketById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });
@@ -129,7 +155,6 @@ exports.deleteTicketById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });

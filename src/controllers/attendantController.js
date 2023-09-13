@@ -1,6 +1,5 @@
 const attendantRepository = require('../repositories/attendantRepository');
 const ValidationContract = require('../util/validators');
-const fetch = require('node-fetch');
 
 exports.createAttendant = async (req, res) => {
   let validators = new ValidationContract();
@@ -19,21 +18,26 @@ exports.createAttendant = async (req, res) => {
     if (validators.isValid()) {
       const responsePerson = await getPersonById(req.body.idPerson);
       if (responsePerson.status !== 200) {
-        res
-          .status(responsePerson.status)
-          .send(responsePerson.text, `with idPerson: "${req.body.idPerson}"`);
-        return;
+        if (responsePerson.status === 204) {
+          res.status(400).send(`idPerson: "${req.body.idPerson}" not found`);
+          return;
+        } else {
+          res.status(responsePerson.status).send(responsePerson.text);
+          return;
+        }
       }
 
       const responseDepartment = await getDepartmentById(req.body.idDepartment);
       if (responseDepartment.status !== 200) {
-        res
-          .status(responseDepartment.status)
-          .send(
-            responseDepartment.text,
-            `with idDepartment: "${req.body.idDepartment}"`,
-          );
-        return;
+        if (responseDepartment.status === 204) {
+          res
+            .status(400)
+            .send(`idDepartment: "${req.body.idDepartment}" not found`);
+          return;
+        } else {
+          res.status(responseDepartment.status).send(responseDepartment.text);
+          return;
+        }
       }
 
       await attendantRepository.createAttendant(req.body);
@@ -44,7 +48,6 @@ exports.createAttendant = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });
@@ -77,13 +80,13 @@ exports.findAttendantById = async (req, res) => {
 
   try {
     if (validators.isValid()) {
-      const attendant = attendantRepository.findAttendantById(attendantId);
-
+      const attendant = await attendantRepository.findAttendantById(
+        attendantId,
+      );
       if (!attendant) {
         res.status(204).send();
         return;
       }
-
       res.status(200).send(attendant);
     } else {
       res.status(400).send({
@@ -91,7 +94,6 @@ exports.findAttendantById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });
@@ -106,9 +108,52 @@ exports.updateAttendantById = async (req, res) => {
     attendantId,
     `attendantId: "${attendantId}" is not a ObjectId valid.`,
   );
+  if (req.body.idPerson != null) {
+    validators.isObjectIdValid(
+      req.body.idPerson,
+      `idPerson: "${req.body.idPerson}" is not a ObjectId valid.`,
+    );
+  }
+
+  if (req.body.idDepartment != null) {
+    validators.isObjectIdValid(
+      req.body.idDepartment,
+      `idDepartment: "${req.body.idDepartmen}" is not a ObjectId valid.`,
+    );
+  }
 
   try {
     if (validators.isValid()) {
+      if (req.body.idPerson != null) {
+        const responsePerson = await getPersonById(req.body.idPerson);
+        if (responsePerson.status !== 200) {
+          if (responsePerson.status === 204) {
+            res.status(400).send(`idPerson: "${req.body.idPerson}" not found`);
+            return;
+          } else {
+            res.status(responsePerson.status).send(responsePerson.text);
+            return;
+          }
+        }
+      }
+
+      if (req.body.idDepartment != null) {
+        const responseDepartment = await getDepartmentById(
+          req.body.idDepartment,
+        );
+        if (responseDepartment.status !== 200) {
+          if (responseDepartment.status === 204) {
+            res
+              .status(400)
+              .send(`idDepartment: "${req.body.idDepartment}" not found`);
+            return;
+          } else {
+            res.status(responseDepartment.status).send(responseDepartment.text);
+            return;
+          }
+        }
+      }
+
       await attendantRepository.updateAttendantById(attendantId, req.body);
       res.status(200).send('Attendant updated');
     } else {
@@ -117,7 +162,6 @@ exports.updateAttendantById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });
@@ -143,7 +187,6 @@ exports.deleteAttendantById = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       message: 'Server error.',
     });

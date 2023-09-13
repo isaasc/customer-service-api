@@ -31,6 +31,7 @@ exports.updateAttendanceRecordById = async (
     $set: {
       idTicket: attendanceRecord.idTicket,
       description: attendanceRecord.description,
+      ticket: attendanceRecord.ticket,
     },
   });
 };
