@@ -13,7 +13,7 @@ exports.findAllAttendanceRecords = async () => {
 };
 
 exports.findAttendanceRecordById = async (attendanceRecordId) => {
-  const attendanceRecord = await AttendanceRecord.findByOne({
+  const attendanceRecord = await AttendanceRecord.findOne({
     _id: attendanceRecordId,
   });
   return attendanceRecord;
@@ -29,6 +29,7 @@ exports.updateAttendanceRecordById = async (
 ) => {
   await AttendanceRecord.findByIdAndUpdate(attendanceRecordId, {
     $set: {
+      idTicket: attendanceRecord.idTicket,
       description: attendanceRecord.description,
     },
   });

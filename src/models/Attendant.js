@@ -1,12 +1,15 @@
-const { Schema, default: mongoose } = require('mongoose');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const schemaAttendant = new Schema({
   idPerson: {
-    type: String,
+    type: ObjectId,
     required: [true, 'idPerson is required'],
   },
   idDepartment: {
-    type: String,
+    type: ObjectId,
+    required: [true, 'idDepartment is required'],
   },
 });
 

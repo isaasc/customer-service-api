@@ -5,22 +5,37 @@ const fetch = require('node-fetch');
 exports.createAttendant = async (req, res) => {
   let validators = new ValidationContract();
   validators.isRequired(req.body.idPerson, 'idPerson is required');
-
-console.log(req.body.idDepartment)
-const test = `http:localhost:3001/departamento/${req.body.idDepartment}`;
-console.log(test);
-
-
+  validators.isRequired(req.body.idDepartment, 'idDepartment is required');
+  validators.isObjectIdValid(
+    req.body.idPerson,
+    `idPerson: "${req.body.idPerson}" is not a ObjectId valid.`,
+  );
+  validators.isObjectIdValid(
+    req.body.idDepartment,
+    `idDepartment: "${req.body.idDepartment}" is not a ObjectId valid.`,
+  );
 
   try {
-    const departamento = await fetch(`http:localhost:3001/departamento/${req.body.idDepartment}`);
-    console.log(departamento);
-    if(departamento == null) {
-      res.status(404).send('idDepartment not found');
-    }
-
-
     if (validators.isValid()) {
+      const responsePerson = await getPersonById(req.body.idPerson);
+      if (responsePerson.status !== 200) {
+        res
+          .status(responsePerson.status)
+          .send(responsePerson.text, `with idPerson: "${req.body.idPerson}"`);
+        return;
+      }
+
+      const responseDepartment = await getDepartmentById(req.body.idDepartment);
+      if (responseDepartment.status !== 200) {
+        res
+          .status(responseDepartment.status)
+          .send(
+            responseDepartment.text,
+            `with idDepartment: "${req.body.idDepartment}"`,
+          );
+        return;
+      }
+
       await attendantRepository.createAttendant(req.body);
       res.status(201).send('Attendant created!');
     } else {
@@ -40,7 +55,7 @@ exports.findAllAttendants = async (req, res) => {
   try {
     const attendants = await attendantRepository.findAllAttendants();
     if (attendants == null || attendants.length == 0) {
-      res.status(204).send('No attendants found');
+      res.status(204).send();
     } else {
       res.status(200).send(attendants);
     }
@@ -52,27 +67,93 @@ exports.findAllAttendants = async (req, res) => {
 };
 
 exports.findAttendantById = async (req, res) => {
+  let validators = new ValidationContract();
   const attendantId = req.params.id;
-  if (attendantId == null) {
-    res.status(400).send('attendantId is required');
-  }
-  const attendant = attendantRepository.findAttendantById(attendantId);
+  validators.isRequired(attendantId, 'attendantId is required');
+  validators.isObjectIdValid(
+    attendantId,
+    `attendantId: "${attendantId}" is not a ObjectId valid.`,
+  );
 
-  if (!attendant) {
-    res.status(404).send();
-  }
+  try {
+    if (validators.isValid()) {
+      const attendant = attendantRepository.findAttendantById(attendantId);
 
-  res.status(200).send(attendant);
+      if (!attendant) {
+        res.status(204).send();
+        return;
+      }
+
+      res.status(200).send(attendant);
+    } else {
+      res.status(400).send({
+        errors: validators.getErrors(),
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      message: 'Server error.',
+    });
+  }
 };
 
 exports.updateAttendantById = async (req, res) => {
+  let validators = new ValidationContract();
   const attendantId = req.params.id;
-  await attendantRepository.updateAttendantById(attendantId, req.body);
-  res.status(200).send('Attendant updated', req.body);
+  validators.isRequired(attendantId, 'attendantId is required');
+  validators.isObjectIdValid(
+    attendantId,
+    `attendantId: "${attendantId}" is not a ObjectId valid.`,
+  );
+
+  try {
+    if (validators.isValid()) {
+      await attendantRepository.updateAttendantById(attendantId, req.body);
+      res.status(200).send('Attendant updated');
+    } else {
+      res.status(400).send({
+        errors: validators.getErrors(),
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      message: 'Server error.',
+    });
+  }
 };
 
 exports.deleteAttendantById = async (req, res) => {
+  let validators = new ValidationContract();
   const attendantId = req.params.id;
-  await attendantRepository.deleteAttendantById(attendantId);
-  res.status(204).send('Attendant deleted', req.body);
+  validators.isRequired(attendantId, 'attendantId is required');
+  validators.isObjectIdValid(
+    attendantId,
+    `attendantId: "${attendantId}" is not a ObjectId valid.`,
+  );
+
+  try {
+    if (validators.isValid()) {
+      await attendantRepository.deleteAttendantById(attendantId);
+      res.status(204).send();
+    } else {
+      res.status(400).send({
+        errors: validators.getErrors(),
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      message: 'Server error.',
+    });
+  }
 };
+
+async function getPersonById(idPerson) {
+  return await fetch(`http:localhost:3001/person/${idPerson}`);
+}
+
+async function getDepartmentById(idDepartment) {
+  return await fetch(`http:localhost:3001/department/${idDepartment}`);
+}

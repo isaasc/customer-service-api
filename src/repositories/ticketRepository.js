@@ -12,7 +12,7 @@ exports.findAllTickets = async () => {
 };
 
 exports.findTicketById = async (ticketId) => {
-  const ticket = await Ticket.findByOne({ _id: ticketId });
+  const ticket = await Ticket.findOne({ _id: ticketId });
   return ticket;
 };
 
@@ -30,6 +30,8 @@ exports.updateTicketById = async (ticketId, ticket) => {
       idAttendant: ticket.idAttendant,
       title: ticket.title,
       telephone: ticket.telephone,
+      idClient: ticket.idClient,
+      active: ticket.active,
     },
   });
 };
